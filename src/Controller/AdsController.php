@@ -14,7 +14,7 @@ class AdsController
 
     public function __construct()
     {
-        $this->adModel = new Ads('ads');
+        $this->adModel = new Ads('adds');
     }
     public function index()
     {
