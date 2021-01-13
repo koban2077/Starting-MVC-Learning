@@ -9,9 +9,16 @@ use App\Model\Ads;
 
 class AdsController
 {
+
+    private Ads $adModel;
+
+    public function __construct()
+    {
+        $this->adModel = new Ads('ads');
+    }
     public function index()
     {
-        $adds = Ads::findAll('ads');
+        $adds = $this->adModel->getAll();
         $data = [
             'title' => 'Ads',
             'adds' => $adds
@@ -42,8 +49,12 @@ class AdsController
             throw new ValidationException($errors);
         }
 
-        $add = new Ads($data['title'], $data['description']);
-        Ads::save($add);
+        $this->adModel->create(
+            [
+                'title' => $data['title'],
+                'description' => $data['description'],
+            ]
+        );
         header('Location: /ads');
         exit;
     }

@@ -9,37 +9,40 @@ use PDO;
 
 abstract class Model
 {
-    public static function findAll()
+
+    protected static PDO $db;
+    protected string $table;
+
+    public function __construct(string $table)
     {
-        $db = self::getDb();
-        $stm = $db->query('SELECT * FROM ' . static::TABLE_NAME);
-        $result = $stm->fetchAll(\PDO::FETCH_ASSOC);
-        return $result ? $result : [];
+        $this->table = $table;
+        self::$db = $this->db();
     }
 
-    public static function remove($id){
-        $db = self::getDb();
-        $stm = $db->prepare('DELETE FROM '. static::TABLE_NAME .' WHERE id = ?');
+    public function getAll(): array
+    {
+        $stm = $this->db()->query('SELECT * FROM ' . $this->table);
+        return $stm->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    }
+
+    public function remove(int $id): void
+    {
+        $sql = sprintf('DELETE FROM %s WHERE id = ?', $this->table);
+        $stm = $this->db()->prepare($sql);
         $stm->execute([$id]);
     }
 
-    public static function findById($id){
-        $db = self::getDb();
-        $stm = $db->prepare('SELECT * FROM ' . static::TABLE_NAME . ' WHERE id = ?');
-        $stm->execute([$id]);
-        $result = $stm->fetch(\PDO::FETCH_ASSOC);
-        return $result ? $result : [];
-
-    }
-
-    public static function getDb() {
-        $dsn = sprintf(
-            'mysql:host=%s;dbname=%s',
-            '192.168.10.10',
-            'testdb'
-        );
-        $pdo = new PDO($dsn, 'testuser', 'qwerty');
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        return $pdo;
+    public function db(): PDO
+    {
+        if (!isset(self::$db)) {
+            try {
+                $dsn = sprintf('mysql:host=%s;dbname=%s', '192.168.10.10', 'testdb');
+                self::$db = new PDO($dsn, 'testuser', 'qwerty');
+                self::$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            } catch (PDOException $exception) {
+                exit('Connection to database failed');
+            }
+        }
+        return self::$db;
     }
 }

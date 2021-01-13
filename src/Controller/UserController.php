@@ -3,15 +3,21 @@
 namespace App\Controller;
 
 use App\Model\User;
-use App\Traits\Auth;
 use App\Exception\ValidationException;
-use http\Header;
 
 class UserController
 {
+    private User $userModel;
+
+    public function __construct()
+    {
+        $this->userModel = new User('users');
+    }
+
     public function index()
     {
-        $users = User::findAll();
+        $users = $this->userModel->getAll();
+
         $data = [
             'title' => 'Users',
             'users' => $users
@@ -42,16 +48,16 @@ class UserController
             $errors['password'] = 'Cannot be empty';
         }
 
-        if (empty($data['name'])) {
-            $errors['name'] = 'Cannot be empty';
-        }
-
         if ($errors) {
             throw new ValidationException($errors);
         }
 
-        $user = new User($data['name'], $data['email'], $data['password']);
-        User::save($user);
+        $this->userModel->create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => $data['password']
+        ]);
+
         header('Location: /user');
         exit;
     }
@@ -59,8 +65,8 @@ class UserController
     public function delete() : void
     {
         if (isset($_GET['id'])) {
-            $id = (int)$_GET['id'];
-            User::remove($id);
+            $id = (int) $_GET['id'];
+            $this->userModel->remove($id);
         }
         header('Location: /user');
         exit;
