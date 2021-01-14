@@ -4,8 +4,9 @@
 namespace App\Model;
 
 
-use App\Exception\ValidationException;
+use App\Utils\Config;
 use PDO;
+use PDOException;
 
 abstract class Model
 {
@@ -36,8 +37,8 @@ abstract class Model
     {
         if (!isset(self::$db)) {
             try {
-                $dsn = sprintf('mysql:host=%s;dbname=%s', '192.168.10.10', 'testdb');
-                self::$db = new PDO($dsn, 'testuser', 'qwerty');
+                $dsn = sprintf('mysql:host=%s;dbname=%s', Config::get('DB_HOST'), Config::get('DB_NAME'));
+                self::$db = new PDO($dsn, Config::get('DBUSER'), Config::get('DB_PASS'));
                 self::$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             } catch (PDOException $exception) {
                 exit('Connection to database failed');

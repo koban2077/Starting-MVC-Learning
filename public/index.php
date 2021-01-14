@@ -1,5 +1,6 @@
 <?php
 
+use App\Utils\Config;
 use App\Utils\Router;
 
 session_start();
@@ -12,6 +13,9 @@ require 'autoload.php';
 $autoloader = new Psr4AutoloaderClass();
 $autoloader->addNamespace('App', __DIR__ . '/../src');
 $autoloader->register();
+
+//Config::get('DBUSER');
+//exit;
 
 require __DIR__ . '/../helpers.php';
 
