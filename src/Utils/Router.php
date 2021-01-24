@@ -4,12 +4,20 @@ namespace App\Utils;
 
 use App\Exception\Exception404;
 use App\Exception\ValidationException;
+use Exception;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
+
 
 class Router
 {
+    public const STREAM = __DIR__ . '/../../my_app.log';
     public function process()
     {
         try {
+            $logger = new Logger('name');
+            $logger->pushHandler(new StreamHandler(self::STREAM, Logger::WARNING));
+
             $action = $this->getAction();
             $controller = $action[0];
             $method = $action[1];
@@ -18,12 +26,13 @@ class Router
             unset($_SESSION['errors']);
             unset($_SESSION['data']);
         } catch (Exception404 $exception) {
+            $logger->warning($exception->getMessage());
             return view('404');
         } catch (ValidationException $exception) {
+            $logger->warning($exception->getMessage());
             $this->handleValidationException($exception);
-        } catch (\Exception $exception) {
-            var_dump($exception);
-            exit;
+        } catch (Exception $exception) {
+            $logger->warning($exception->getMessage());
             return view('wrong');
         }
     }
@@ -65,8 +74,6 @@ class Router
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $_SESSION['errors'] = $exception->getErrors();
             $_SESSION['data'] = $_POST;
-        } else {
-
         }
 
         header('Location: ' . $url);

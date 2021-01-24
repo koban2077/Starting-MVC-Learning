@@ -11,7 +11,7 @@ function view(string $template, array $data = []): string
 function error($name)
 {
     if (isset($_SESSION['errors'][$name])) {
-        return $_SESSION['errors'][$name];
+        return $_SESSION['errors'][$name][0];
     }
     return null;
 }
