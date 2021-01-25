@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Exception\ValidationException;
 use App\Model\Ads;
+use Valitron\Validator;
 
 class AdsController
 {
@@ -16,6 +17,7 @@ class AdsController
     {
         $this->adModel = new Ads('adds');
     }
+
     public function index()
     {
         $adds = $this->adModel->getAll();
@@ -28,27 +30,21 @@ class AdsController
 
     public function create(): string
     {
-        if ($_SERVER['REQUEST_METHOD'] == 'GET'){
+        if ($_SERVER['REQUEST_METHOD'] == 'GET') {
             $data = [
                 'title' => 'Ads Creation',
             ];
             return view('ads.ad_creation', $data);
         }
 
-        $errors = [];
         $data = $_POST;
-        if (empty($data['title'])) {
-            $errors['title'] = 'Cannot be empty';
+        $v = new Validator($data);
+        $v->rule('required', ['title', 'description']);
+        $v->rule('lengthMax', ['title'], 100);
+        $v->rule('lengthMax', ['description'], 1024);
+        if (!$v->validate()) {
+            throw new ValidationException('validation error', $v->errors());
         }
-
-        if (empty($data['description'])) {
-            $errors['description'] = 'Cannot be empty';
-        }
-
-        if ($errors) {
-            throw new ValidationException($errors);
-        }
-
         $this->adModel->create(
             [
                 'title' => $data['title'],
